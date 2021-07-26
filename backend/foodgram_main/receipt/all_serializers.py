@@ -1,8 +1,11 @@
-from rest_framework import serializers
-from .models import Favorite, ShoppingCart, Tag, Ingredient, Recipe, RecipeIngredient
-from users.models import CustomUser, Follow
-from .format_transition import Hex2NameColor
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
+
+from users.models import CustomUser, Follow
+
+from .format_transition import Hex2NameColor
+from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                     ShoppingCart, Tag)
 
 
 class UserDetailSerializer(serializers.ModelSerializer):

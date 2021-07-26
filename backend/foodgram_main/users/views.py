@@ -1,12 +1,14 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from .models import CustomUser, Follow
-from receipt.all_serializers import UserDetailSerializer, FollowSerializer
-from rest_framework.decorators import action
-from .permissions import UserDetailedAuthOnly
-from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from receipt.all_serializers import FollowSerializer, UserDetailSerializer
+
+from .models import CustomUser, Follow
+from .permissions import UserDetailedAuthOnly
 
 
 class UsersViewSet(viewsets.ModelViewSet):

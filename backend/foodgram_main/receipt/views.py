@@ -1,13 +1,17 @@
-from rest_framework import viewsets, status
-from .models import Recipe, Tag, Ingredient, ShoppingCart, Favorite
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny, IsAuthenticated
-from .all_serializers import ReceiptDetailedSerializer, TagSerializer, IngredientsSerializer, ShoppingSerializer, FavorSerializer
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.views import APIView
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .all_serializers import (FavorSerializer, IngredientsSerializer,
+                              ReceiptDetailedSerializer, ShoppingSerializer,
+                              TagSerializer)
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
 
 
 class MixinTransition(
