@@ -25,15 +25,13 @@ class Follow(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='Имя подписчика',
         related_name='follower',
     )
-    author = models.ForeignKey(
+    following = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='Имя подписанта',
         related_name='following',
     )
 
     class Meta:
-        unique_together = ['user', 'author']
+        unique_together = ['user', 'following']

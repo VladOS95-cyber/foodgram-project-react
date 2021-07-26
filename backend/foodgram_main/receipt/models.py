@@ -13,23 +13,47 @@ class Tag(models.Model):
     )
 
 
-class Ingredients(models.Model):
+class Ingredient(models.Model):
     name = models.CharField(max_length=200, blank=False)
     measurement_unit = models.CharField(max_length=200, blank=False)
-    amount = models.PositiveIntegerField()
 
 
-class ReceiptDetailed(models.Model):
+class RecipeIngredient(models.Model):
+    ingredients = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        blank=False)
+    amount = models.PositiveIntegerField(blank=False)
+
+
+class Recipe(models.Model):
     tags = models.ManyToManyField(Tag, related_name='tags')
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         blank=False
     )
-    ingredients = models.ManyToManyField(Ingredients, related_name='receipt')
-    is_favorited = models.BooleanField(blank=False)
-    is_in_shopping_cart = models.BooleanField(blank=False)
+    image = models.CharField(max_length=500)
+    ingredients = models.ManyToManyField(
+        RecipeIngredient)
+    is_favorited = models.BooleanField(blank=False, default=False)
+    is_in_shopping_cart = models.BooleanField(blank=False, default=False)
     name = models.CharField(max_length=200, blank=False)
-    image = models.URLField(blank=False)
     text = models.TextField(max_length=500, blank=False)
-    cooking_time = models.PositiveIntegerField()
+    cooking_time = models.PositiveIntegerField(blank=False)
+
+
+class ShoppingCart(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE,
+        related_name='purchases', verbose_name='Пользователь')
+    purchase = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        related_name='customers', verbose_name='Покупка')
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE)
+    wish = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE)

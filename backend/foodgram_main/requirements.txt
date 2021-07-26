@@ -2,5 +2,7 @@ Django
 django-filter
 djangorestframework
 djoser
+drf_extra_fields
 isort
 py
+webcolors

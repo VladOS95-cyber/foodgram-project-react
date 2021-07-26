@@ -1,11 +1,12 @@
-from django.core.checks import messages
-from django.http import request
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from .models import CustomUser
-from .serializers import UserDetailSerializer
+from .models import CustomUser, Follow
+from receipt.all_serializers import UserDetailSerializer, FollowSerializer
 from rest_framework.decorators import action
 from .permissions import UserDetailedAuthOnly
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -27,4 +28,36 @@ class UsersViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class SubscribeView(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, id):
+        user = request.user
+        author = get_object_or_404(CustomUser, id=id)
+        if Follow.objects.filter(user=user, following=author).exists():
+            return Response(
+                'Вы уже подписаны',
+                status=status.HTTP_400_BAD_REQUEST)
+        Follow.objects.create(user=user, following=author)
+        serializer = UserDetailSerializer(author)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, id):
+        user = request.user
+        author = get_object_or_404(CustomUser, id=id)
+        follow = Follow.objects.get(user=user, following=author)
+        follow.delete()
+        return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
+
+
+class ShowSubscriptionsView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        following = Follow.objects.filter(user=user).all()
+        serializer = FollowSerializer(following, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
