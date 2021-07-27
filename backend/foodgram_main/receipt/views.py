@@ -95,12 +95,13 @@ class DownloadShoppingCart(APIView):
         ingredients_dict = {}
         for ing in new_ingredients:
             if ing in ingredients_dict.keys():
-                ingredients_dict[ing] += ing.quantity
+                ingredients_dict[ing] += ing.amount
             else:
-                ingredients_dict[ing] = ing.quantity
+                ingredients_dict[ing] = ing.amount
         wishlist = []
         for k, v in ingredients_dict.items():
-            wishlist.append(f'{k.name} - {v} {k.unit} \n')
+            wishlist.append(
+                f'{k.ingredients.name} - {v} {k.ingredients.measurement_unit} \n')
         wishlist.append('\n')
         wishlist.append('FoodGram, 2021')
         response = HttpResponse(wishlist, 'Content-Type: text/plain')
