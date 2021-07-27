@@ -4,5 +4,8 @@ djangorestframework
 djoser
 drf_extra_fields
 isort
+gunicorn
 py
+python-dotenv
+psycopg2-binary
 webcolors
