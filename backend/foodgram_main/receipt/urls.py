@@ -12,8 +12,18 @@ router_v1.register('tags', TagsViewSet, basename='Tags')
 
 
 urlpatterns = [
-    path(r'recipes/<int:id>/favorite/', AddToFavorite.as_view()),
-    path(r'recipes/<int:id>/shopping_cart/', AddToShoping.as_view()),
-    path('recipes/download_shopping_cart/', DownloadShoppingCart.as_view()),
+    path(
+        r'recipes/<int:id>/favorite/',
+        AddToFavorite.as_view(),
+        name='favorite'),
+    path(
+        r'recipes/<int:id>/shopping_cart/',
+        AddToShoping.as_view(),
+        name='shopping_cart'),
+    path(
+        'recipes/download_shopping_cart/',
+        DownloadShoppingCart.as_view(),
+        name='get_shopping_cart'
+    ),
     path('', include(router_v1.urls))
 ]

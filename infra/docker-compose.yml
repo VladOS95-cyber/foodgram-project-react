@@ -14,8 +14,8 @@ services:
     depends_on:
       - db
     volumes:
-      - static_files:/code/static/
-      - media_files:/code/media/
+      - static_files:/app/static/
+      - media_files:/app/media/
     env_file:
       - ../backend/foodgram_main/.env
   frontend:

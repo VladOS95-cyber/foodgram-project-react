@@ -14,7 +14,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         current_user = obj
-        request = self.context.get('request', None)
+        request = self.context.get('request')
         if request:
             current_user = request.user
         if current_user.is_anonymous:
@@ -36,34 +36,14 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField('get_id')
-    email = serializers.SerializerMethodField('get_email')
-    username = serializers.SerializerMethodField('get_username')
-    first_name = serializers.SerializerMethodField('get_first_name')
-    last_name = serializers.SerializerMethodField('get_last_name')
+    id = serializers.ReadOnlyField(source='following.id')
+    email = serializers.ReadOnlyField(source='following.email')
+    username = serializers.ReadOnlyField(source='following.username')
+    first_name = serializers.ReadOnlyField(source='following.first_name')
+    last_name = serializers.ReadOnlyField(source='following.last_name')
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
     recipes = serializers.SerializerMethodField('get_recipe')
     recipes_count = serializers.SerializerMethodField('get_recipes_count')
-
-    def get_id(self, obj):
-        author = obj.following
-        return author.id
-
-    def get_email(self, obj):
-        author = obj.following
-        return author.email
-
-    def get_username(self, obj):
-        author = obj.following
-        return author.username
-
-    def get_first_name(self, obj):
-        author = obj.following
-        return author.first_name
-
-    def get_last_name(self, obj):
-        author = obj.following
-        return author.last_name
 
     def get_recipe(self, obj):
         author = obj.following
@@ -109,42 +89,29 @@ class IngredientsSerializer(serializers.ModelSerializer):
 
 
 class IngredientsForRecipe(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField('get_id')
-    name = serializers.SerializerMethodField('get_name')
-    measurement_unit = serializers.SerializerMethodField(
-        'get_measurement_unit')
-
-    def get_id(self, obj):
-        ingredient = obj.ingredients
-        return ingredient.id
-
-    def get_name(self, obj):
-        ingredient = obj.ingredients
-        return ingredient.name
-
-    def get_measurement_unit(self, obj):
-        ingredient = obj.ingredients
-        return ingredient.measurement_unit
+    id = serializers.ReadOnlyField(source='ingredient.id')
+    name = serializers.ReadOnlyField(source='ingredient.name')
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit')
 
     class Meta:
         model = RecipeIngredient
-        fields = (
-            'id',
-            'name',
-            'measurement_unit',
-            'amount'
-        )
+        fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
 class ReceiptDetailedSerializer(serializers.ModelSerializer):
     author = UserDetailSerializer(read_only=True)
-    ingredients = IngredientsForRecipe(many=True)
+    ingredients = serializers.SerializerMethodField('get_ingredients')
     tags = TagSerializer(many=True)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField('get_is_favorited')
     is_in_shopping_cart = serializers.SerializerMethodField(
         'get_is_in_shopping_cart'
     )
+
+    def get_ingredients(self, obj):
+        qs = RecipeIngredient.objects.filter(recipe=obj)
+        return IngredientsForRecipe(qs, many=True).data
 
     def get_is_favorited(self, obj):
         return Favorite.objects.filter(wish=obj).exists()
@@ -169,26 +136,10 @@ class ReceiptDetailedSerializer(serializers.ModelSerializer):
 
 
 class ShoppingSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField('get_id')
-    name = serializers.SerializerMethodField('get_name')
-    image = serializers.SerializerMethodField('get_image')
-    cooking_time = serializers.SerializerMethodField('get_cooking_time')
-
-    def get_id(self, obj):
-        receipe = obj.purchase
-        return receipe.id
-
-    def get_name(self, obj):
-        receipe = obj.purchase
-        return receipe.name
-
-    def get_image(self, obj):
-        receipe = obj.purchase
-        return receipe.image
-
-    def get_cooking_time(self, obj):
-        receipe = obj.purchase
-        return receipe.cooking_time
+    id = serializers.ReadOnlyField(source='purchase.id')
+    name = serializers.ReadOnlyField(source='purchase.name')
+    image = serializers.ReadOnlyField(source='purchase.image')
+    cooking_time = serializers.ReadOnlyField(source='purchase.cooking_time')
 
     class Meta:
         model = ShoppingCart
@@ -201,26 +152,10 @@ class ShoppingSerializer(serializers.ModelSerializer):
 
 
 class FavorSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField('get_id')
-    name = serializers.SerializerMethodField('get_name')
-    image = serializers.SerializerMethodField('get_image')
-    cooking_time = serializers.SerializerMethodField('get_cooking_time')
-
-    def get_id(self, obj):
-        receipe = obj.wish
-        return receipe.id
-
-    def get_name(self, obj):
-        receipe = obj.wish
-        return receipe.name
-
-    def get_image(self, obj):
-        receipe = obj.wish
-        return receipe.image
-
-    def get_cooking_time(self, obj):
-        receipe = obj.wish
-        return receipe.cooking_time
+    id = serializers.ReadOnlyField(source='wish.id')
+    name = serializers.ReadOnlyField(source='wish.name')
+    image = serializers.ReadOnlyField(source='wish.image')
+    cooking_time = serializers.ReadOnlyField(source='wish.cooking_time')
 
     class Meta:
         model = ShoppingCart

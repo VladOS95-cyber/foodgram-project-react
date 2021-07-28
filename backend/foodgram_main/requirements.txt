@@ -3,6 +3,7 @@ django-filter
 djangorestframework
 djoser
 drf_extra_fields
+django_environ
 isort
 gunicorn
 py

@@ -22,16 +22,16 @@ class MixinTransition(
 
 class ReceiptViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = ReceiptDetailedSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['author', 'name', 'tags']
+    serializer_class = ReceiptDetailedSerializer
 
 
 class TagsViewSet(MixinTransition):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny,)
+    pagination_class = None
 
 
 class IngredientsViewSet(MixinTransition):
@@ -54,7 +54,7 @@ class AddToShoping(APIView):
 
     def delete(self, request, id):
         user = request.user
-        shopping = ShoppingCart.objects.get(user=user, id=id)
+        shopping = get_object_or_404(ShoppingCart, user=user, id=id)
         shopping.delete()
         return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
 
@@ -71,30 +71,28 @@ class AddToFavorite(APIView):
 
     def delete(self, request, id):
         user = request.user
-        favorite = Favorite.objects.get(user=user, id=id)
+        favorite = get_object_or_404(Favorite, user=user, id=id)
         favorite.delete()
         return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
 
 
 class DownloadShoppingCart(APIView):
     permission_classes = (IsAuthenticated, )
+    pagination_class = None
 
     def get(self, request):
         user = request.user
-        users_shopping_list_recipes = user.purchases.all()
-        recipes = []
-        for i in users_shopping_list_recipes:
-            recipes.append(i.purchase)
+        recipes = Recipe.objects.filter(recipes__user=user)
         ingredients = []
         for recipe in recipes:
             ingredients.append(recipe.ingredients.all())
         new_ingredients = []
-        for set in ingredients:
-            for ingredient in set:
+        for ingredients_set in ingredients:
+            for ingredient in ingredients_set:
                 new_ingredients.append(ingredient)
         ingredients_dict = {}
         for ing in new_ingredients:
-            if ing in ingredients_dict.keys():
+            if ing in ingredients_dict:
                 ingredients_dict[ing] += ing.amount
             else:
                 ingredients_dict[ing] = ing.amount
