@@ -17,17 +17,17 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         max_length=254,
         unique=True,
-        verbose_name='email')
+        verbose_name='почта')
     username = models.CharField(
         max_length=150,
         unique=True,
-        verbose_name='username')
-    first_name = models.CharField(max_length=150, verbose_name='first_name')
-    last_name = models.CharField(max_length=150, verbose_name='last_name')
+        verbose_name='никнейм')
+    first_name = models.CharField(max_length=150, verbose_name='имя')
+    last_name = models.CharField(max_length=150, verbose_name='фамилия')
 
     class Meta:
-        verbose_name = 'user'
-        verbose_name_plural = 'users'
+        verbose_name = 'пользователь'
+        verbose_name_plural = 'пользователи'
 
 
 class Follow(models.Model):
@@ -35,19 +35,19 @@ class Follow(models.Model):
         CustomUser,
         on_delete=models.CASCADE,
         related_name='follower',
-        verbose_name='user'
+        verbose_name='пользователь'
     )
     following = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
         related_name='following',
-        verbose_name='author'
+        verbose_name='автор'
     )
 
     class Meta:
         constraints = [models.UniqueConstraint(
             fields=['user', 'following'],
-            name='unique_subscriptions')
-    ]
-        verbose_name = 'subscription'
-        verbose_name_plural = 'subscriptions'
+            name='unique_subscriptions')]
+
+        verbose_name = 'подписка'
+        verbose_name_plural = 'подписки'

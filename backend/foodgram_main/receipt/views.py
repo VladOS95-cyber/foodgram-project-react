@@ -12,6 +12,7 @@ from .all_serializers import (FavorSerializer, IngredientsSerializer,
                               ReceiptDetailedSerializer, ShoppingSerializer,
                               TagSerializer)
 from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
+from .filters import RecipeFilter
 
 
 class MixinTransition(
@@ -25,6 +26,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticatedOrReadOnly,)
     filter_backends = [DjangoFilterBackend]
     serializer_class = ReceiptDetailedSerializer
+    filter_class = RecipeFilter
 
 
 class TagsViewSet(MixinTransition):
@@ -48,6 +50,10 @@ class AddToShoping(APIView):
     def get(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
+        if ShoppingCart.objects.filter(user=user, purchase=recipe).exists():
+            return Response(
+                'Рецепт уже добавлен в карту покупок',
+                status=status.HTTP_400_BAD_REQUEST)
         purchase = ShoppingCart.objects.create(user=user, purchase=recipe)
         serializer = ShoppingSerializer(purchase)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -65,6 +71,10 @@ class AddToFavorite(APIView):
     def get(self, request, id):
         user = request.user
         recipe = get_object_or_404(Recipe, id=id)
+        if Favorite.objects.filter(user=user, wish=recipe).exists():
+            return Response(
+                'Рецепт уже добавлен в избранное',
+                status=status.HTTP_400_BAD_REQUEST)
         favor = Favorite.objects.create(user=user, wish=recipe)
         serializer = FavorSerializer(favor)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -82,7 +92,7 @@ class DownloadShoppingCart(APIView):
 
     def get(self, request):
         user = request.user
-        recipes = Recipe.objects.filter(recipes__user=user)
+        recipes = Recipe.objects.filter(shoppingcart__user=user)
         ingredients = []
         for recipe in recipes:
             ingredients.append(recipe.ingredients.all())
@@ -97,9 +107,9 @@ class DownloadShoppingCart(APIView):
             else:
                 ingredients_dict[ing] = ing.amount
         wishlist = []
-        for k, v in ingredients_dict.items():
+        for recipe_ing, quantity in ingredients_dict.items():
             wishlist.append(
-                f'{k.ingredients.name} - {v} {k.ingredients.measurement_unit} \n')
+                f'{recipe_ing.ingredient.name} - {quantity} {recipe_ing.ingredient.measurement_unit} \n')
         wishlist.append('\n')
         wishlist.append('FoodGram, 2021')
         response = HttpResponse(wishlist, 'Content-Type: text/plain')

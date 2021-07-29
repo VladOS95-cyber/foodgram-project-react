@@ -10,11 +10,13 @@ router_v1.register('users', UsersViewSet, basename='Users')
 urlpatterns = [
     path(
         r'users/<int:id>/subscribe/',
-        SubscribeView.as_view()
+        SubscribeView.as_view(),
+        name='subscribe'
     ),
     path(
         'users/subscriptions/',
-        ShowSubscriptionsView.as_view()
+        ShowSubscriptionsView.as_view(),
+        name='subscriptions'
     ),
     path('', include(router_v1.urls))
 ]

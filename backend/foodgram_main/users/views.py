@@ -18,8 +18,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 
     @action(methods=('get', 'patch'), detail=False)
     def me(self, request):
-        if not request.user.is_authenticated:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
         if request.method == 'GET':
             serializer = UserDetailSerializer(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -50,7 +48,7 @@ class SubscribeView(APIView):
     def delete(self, request, id):
         user = request.user
         author = get_object_or_404(CustomUser, id=id)
-        follow = Follow.objects.get(user=user, following=author)
+        follow = get_object_or_404(Follow, user=user, following=author)
         follow.delete()
         return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
 
