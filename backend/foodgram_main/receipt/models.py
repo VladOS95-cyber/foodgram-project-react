@@ -32,6 +32,7 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
+        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -47,7 +48,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         blank=True,
-        through='RecipeIngredient', 
+        through='RecipeIngredient',
         verbose_name='ингредиенты')
     image = models.CharField(max_length=500, verbose_name='картинка')
     name = models.CharField(max_length=200, verbose_name='название')
@@ -72,6 +73,7 @@ class RecipeIngredient(models.Model):
     class Meta:
         verbose_name = 'ингредиенты для рецепта'
         verbose_name_plural = 'ингредиенты для рецептов'
+        ordering = ['id']
 
     def __str__(self):
         return f'{self.ingredient} в {self.recipe}'
