@@ -47,7 +47,8 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         blank=True,
-        through='RecipeIngredient')
+        through='RecipeIngredient', 
+        verbose_name='ингредиенты')
     image = models.CharField(max_length=500, verbose_name='картинка')
     name = models.CharField(max_length=200, verbose_name='название')
     text = models.TextField(max_length=500, verbose_name='описание')
@@ -61,9 +62,7 @@ class Recipe(models.Model):
 
 class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт',
-        related_name='recipe_ingredients',
-    )
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт')
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
