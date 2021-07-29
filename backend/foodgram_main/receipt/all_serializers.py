@@ -101,13 +101,17 @@ class IngredientsForRecipe(serializers.ModelSerializer):
 
 class ReceiptDetailedSerializer(serializers.ModelSerializer):
     author = UserDetailSerializer(read_only=True)
-    ingredients = IngredientsForRecipe(many=True)
+    ingredients = serializers.SerializerMethodField('get_ingredients')
     tags = TagSerializer(many=True)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField('get_is_favorited')
     is_in_shopping_cart = serializers.SerializerMethodField(
         'get_is_in_shopping_cart'
     )
+
+    def get_ingredients(self, obj):
+        qs = RecipeIngredient.objects.filter(recipe=obj)
+        return IngredientsForRecipe(qs, many=True).data
 
     def get_is_favorited(self, obj):
         return Favorite.objects.filter(wish=obj).exists()

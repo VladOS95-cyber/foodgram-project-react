@@ -33,16 +33,8 @@ class Ingredient(models.Model):
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
 
-
-class RecipeIngredient(models.Model):
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE, verbose_name='ингредиент')
-    amount = models.PositiveIntegerField(verbose_name='количество')
-
-    class Meta:
-        verbose_name = 'ингредиенты для рецепта'
-        verbose_name_plural = 'ингредиенты для рецептов'
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -53,8 +45,9 @@ class Recipe(models.Model):
         verbose_name='автор'
     )
     ingredients = models.ManyToManyField(
-        RecipeIngredient,
-        verbose_name='ингредиенты')
+        Ingredient,
+        blank=True,
+        through='RecipeIngredient')
     image = models.CharField(max_length=500, verbose_name='картинка')
     name = models.CharField(max_length=200, verbose_name='название')
     text = models.TextField(max_length=500, verbose_name='описание')
@@ -64,6 +57,25 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = 'рецепт'
         verbose_name_plural = 'рецепты'
+
+
+class RecipeIngredient(models.Model):
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, verbose_name='Рецепт',
+        related_name='recipe_ingredients',
+    )
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='ингредиент')
+    amount = models.PositiveIntegerField(verbose_name='количество')
+
+    class Meta:
+        verbose_name = 'ингредиенты для рецепта'
+        verbose_name_plural = 'ингредиенты для рецептов'
+
+    def __str__(self):
+        return f'{self.ingredient} в {self.recipe}'
 
 
 class ShoppingCart(models.Model):
