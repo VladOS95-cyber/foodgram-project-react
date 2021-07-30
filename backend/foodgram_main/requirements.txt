@@ -9,4 +9,5 @@ gunicorn
 py
 python-dotenv
 psycopg2-binary
+Pillow
 webcolors

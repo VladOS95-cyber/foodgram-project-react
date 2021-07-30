@@ -1,36 +1,40 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
 from rest_framework import status, viewsets
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (AllowAny, IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .all_serializers import (FavorSerializer, IngredientsSerializer,
-                              ReceiptDetailedSerializer, ShoppingSerializer,
-                              TagSerializer)
-from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag
-from .filters import RecipeFilter
+from .all_serializers import (FavorSerializer, IngredientSerializer,
+                              ShowRecipeSerializer, ShoppingSerializer,
+                              TagSerializer, CreateRecipeSerializer)
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, RecipeIngredient
+from .filters import RecipeFilter, IngredientFilter
+from django.contrib.auth import get_user_model
+from .permissions import AdminOrAuthorOrReadOnly
 
-
-class MixinTransition(
-    ListModelMixin,
-        RetrieveModelMixin, viewsets.GenericViewSet):
-    pass
+User = get_user_model()
 
 
 class ReceiptViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
-    filter_backends = [DjangoFilterBackend]
-    serializer_class = ReceiptDetailedSerializer
-    filter_class = RecipeFilter
+    permission_classes = [AdminOrAuthorOrReadOnly, ]
+    filter_backends = [DjangoFilterBackend, ]
+    filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ShowRecipeSerializer
+        return CreateRecipeSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
 
 
-class TagsViewSet(MixinTransition):
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny,)
@@ -39,80 +43,98 @@ class TagsViewSet(MixinTransition):
 
 class IngredientsViewSet(viewsets.ModelViewSet):
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientsSerializer
+    serializer_class = IngredientSerializer
+    pagination_class = None
     permission_classes = (AllowAny,)
-    filter_backends = (filters.SearchFilter, )
-    filterset_fields = ('name', )
+    filter_backends = [DjangoFilterBackend, ]
+    filterset_class = IngredientFilter
 
 
 class AddToShoping(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated, ]
 
-    def get(self, request, id):
+    def get(self, request, recipe_id):
         user = request.user
-        recipe = get_object_or_404(Recipe, id=id)
-        if ShoppingCart.objects.filter(user=user, purchase=recipe).exists():
-            return Response(
-                'Рецепт уже добавлен в карту покупок',
-                status=status.HTTP_400_BAD_REQUEST)
-        purchase = ShoppingCart.objects.create(user=user, purchase=recipe)
-        serializer = ShoppingSerializer(purchase)
+        data = {
+            'user': user.id,
+            'recipe': recipe_id,
+        }
+
+        context = {'request': request}
+        serializer = ShoppingSerializer(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, id):
+    def delete(self, request, recipe_id):
         user = request.user
-        shopping = get_object_or_404(ShoppingCart, user=user, id=id)
-        shopping.delete()
-        return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+
+        ShoppingCart.objects.get(user=user, recipe=recipe).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT)
 
 
 class AddToFavorite(APIView):
-    permission_classes = (IsAuthenticated, )
+    permission_classes = [IsAuthenticated, ]
 
-    def get(self, request, id):
+    def get(self, request, recipe_id):
         user = request.user
-        recipe = get_object_or_404(Recipe, id=id)
-        if Favorite.objects.filter(user=user, wish=recipe).exists():
-            return Response(
-                'Рецепт уже добавлен в избранное',
-                status=status.HTTP_400_BAD_REQUEST)
-        favor = Favorite.objects.create(user=user, wish=recipe)
-        serializer = FavorSerializer(favor)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = {
+            'user': user.id,
+            'recipe': recipe_id,
+        }
+        serializer = FavorSerializer(
+            data=data,
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
-    def delete(self, request, id):
+    def delete(self, request, recipe_id):
         user = request.user
-        favorite = get_object_or_404(Favorite, user=user, id=id)
-        favorite.delete()
-        return Response('Удалено', status=status.HTTP_204_NO_CONTENT)
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+
+        Favorite.objects.get(
+            user=user,
+            recipe=recipe).delete()
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 class DownloadShoppingCart(APIView):
-    permission_classes = (IsAuthenticated, )
-    pagination_class = None
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        user = request.user
-        recipes = Recipe.objects.filter(shoppingcart__user=user)
-        ingredients = []
-        for recipe in recipes:
-            ingredients.append(recipe.ingredients.all())
-        new_ingredients = []
-        for ingredients_set in ingredients:
-            for ingredient in ingredients_set:
-                new_ingredients.append(ingredient)
-        ingredients_dict = {}
-        for ing in new_ingredients:
-            if ing in ingredients_dict:
-                ingredients_dict[ing] += ing.amount
-            else:
-                ingredients_dict[ing] = ing.amount
+        shopping_cart = request.user.shopping_cart.all()
+        buying_list = {}
+
+        for item in shopping_cart:
+            ingredients = RecipeIngredient.objects.filter(recipe=item.recipe)
+            for ingredient in ingredients:
+                amount = ingredient.amount
+                name = ingredient.ingredient.name
+                measurement_unit = ingredient.ingredient.measurement_unit
+
+                if name not in buying_list:
+                    buying_list[name] = {
+                        'measurement_unit': measurement_unit,
+                        'amount': amount
+                    }
+                else:
+                    buying_list[name]['amount'] = (buying_list[name]['amount']
+                                                   + amount)
+
         wishlist = []
-        for recipe_ing, quantity in ingredients_dict.items():
-            wishlist.append(
-                f'{recipe_ing.ingredient.name} - {quantity} {recipe_ing.ingredient.measurement_unit} \n')
-        wishlist.append('\n')
-        wishlist.append('FoodGram, 2021')
+        for item in buying_list:
+            wishlist.append(f'{item} - {buying_list[item]["amount"]} '
+                            f'{buying_list[item]["measurement_unit"]} \n')
+
         response = HttpResponse(wishlist, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
         return response

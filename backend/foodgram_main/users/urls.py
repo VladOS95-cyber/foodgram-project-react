@@ -1,15 +1,11 @@
-from django.urls import include, path
-from rest_framework.routers import DefaultRouter
+from django.urls import path, include
 
-from .views import ShowSubscriptionsView, SubscribeView, UsersViewSet
+from .views import ShowSubscriptionsView, SubscribeView, CustomAuthToken, Logout
 
-router_v1 = DefaultRouter()
-
-router_v1.register('users', UsersViewSet, basename='Users')
 
 urlpatterns = [
     path(
-        r'users/<int:id>/subscribe/',
+        'users/<int:author_id>/subscribe/',
         SubscribeView.as_view(),
         name='subscribe'
     ),
@@ -18,5 +14,7 @@ urlpatterns = [
         ShowSubscriptionsView.as_view(),
         name='subscriptions'
     ),
-    path('', include(router_v1.urls))
+    path('', include('djoser.urls')),
+    path('auth/token/login/', CustomAuthToken.as_view()),
+    path('auth/token/logout/', Logout.as_view())
 ]

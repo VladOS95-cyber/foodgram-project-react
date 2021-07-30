@@ -15,9 +15,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-ex-_hye+b3f@mcyh)-!*_en#r#4mna3r-gdiz$hub!k%h^avaa'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['*', 'localhost']
 
 
 INSTALLED_APPS = [
@@ -29,9 +29,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'djoser',
+    'django_filters',
     'receipt',
     'users',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -138,6 +139,28 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-        'PAGE_SIZE': 10
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend'],
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.'
+                                'PageNumberPagination',
+    'PAGE_SIZE': 6,
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.'
+                                'NamespaceVersioning',
+}
+
+
+DJOSER = {
+
+    'SERIALIZERS': {
+        'user_create': 'receipt.all_serializers.UserRegistrationSerializer',
+        'user': 'receipt.all_serializers.UserDetailSerializer',
+        'current_user': 'receipt.all_serializers.UserDetailSerializer',
+    },
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.AllowAny'],
+        'user': ['rest_framework.permissions.AllowAny']
+    },
+    'HIDE_USERS': False,
+    'USER_ID_FIELD': 'id',
 }
