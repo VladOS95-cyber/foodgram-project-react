@@ -1,11 +1,11 @@
 FROM python:3.8.5
 
-WORKDIR /app
+WORKDIR /code
 
-COPY requirements.txt ../app
+COPY requirements.txt ../code
 
-RUN pip3 install -r ../app/requirements.txt
+RUN pip3 install -r ../code/requirements.txt
 
-COPY . ../app
+COPY . ../code
 
 CMD gunicorn foodgram_main.wsgi:application --bind 0.0.0.0:8000
