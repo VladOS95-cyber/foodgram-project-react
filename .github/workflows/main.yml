@@ -41,7 +41,7 @@ jobs:
           script: |
             sudo docker pull vladislavbronzov95/foodgram:latest
             sudo /usr/bin/docker-compose stop
-            sudo /usr/bin/docker-compose rm web
+            sudo /usr/bin/docker-compose rm backend
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
