@@ -38,7 +38,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           stack_file_name: docker-compose.yml
-          script:
+          script: |
             sudo docker pull vladislavbronzov95/foodgram:latest
             sudo /usr/bin/docker-compose stop
             sudo /usr/bin/docker-compose rm backend
