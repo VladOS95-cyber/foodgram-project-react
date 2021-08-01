@@ -5,11 +5,10 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../backend/foodgram_main/.env
   backend:
-    image: vladislavbronzov95/foodgram:latest
     build:
-      context: ../backend/foodgram_main/
+      context: ../backend/foodgram_main
       dockerfile: Dockerfile
     restart: always
     depends_on:
@@ -18,7 +17,7 @@ services:
       - static_value:/code/static/
       - media_value:/code/media/
     env_file:
-      - ./.env
+      - ../backend/foodgram_main/.env
   frontend:
     build:
       context: ../frontend
