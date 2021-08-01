@@ -5,11 +5,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./backend/foodgram_main/.env
+      - ./.env
   backend:
     image: vladislavbronzov95/foodgram:latest
     build:
-      context: ./backend/foodgram_main
+      context: ../backend/foodgram_main
       dockerfile: Dockerfile
     restart: always
     depends_on:
@@ -18,13 +18,13 @@ services:
       - static_files:/code/static/
       - media_files:/code/media/
     env_file:
-      - ./backend/foodgram_main/.env
+      - ./.env
   frontend:
     build:
-      context: ./frontend
+      context: ../frontend
       dockerfile: Dockerfile
     volumes:
-      - ./frontend/:/app/result_build/
+      - ../frontend/:/app/result_build/
   nginx:
     image: nginx:1.19.3
     ports:
