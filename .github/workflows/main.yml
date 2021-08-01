@@ -22,7 +22,7 @@ jobs:
         uses: docker/build-push-action@v2 
         with:
           push: true
-          context: ./backend/foodgram_main/
+          context: ./backend/
           tags: vladislavbronzov95/foodgram:latest
 
   deploy:
@@ -38,10 +38,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           stack_file_name: docker-compose.yaml
-          script: |
+          script:
             sudo docker pull vladislavbronzov95/foodgram:latest
-            sudo /usr/bin/docker-compose stop
-            sudo /usr/bin/docker-compose rm backend
+            sudo docker-compose stop
+            sudo docker-compose rm backend
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
