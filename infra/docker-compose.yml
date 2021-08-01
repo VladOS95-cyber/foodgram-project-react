@@ -9,7 +9,7 @@ services:
   backend:
     image: vladislavbronzov95/foodgram:latest
     build:
-      context: ../elonmusk955/foodgram-project-react/backend/foodgram_main
+      context: ../backend/foodgram_main/
       dockerfile: Dockerfile
     restart: always
     depends_on:
@@ -21,7 +21,7 @@ services:
       - ./.env
   frontend:
     build:
-      context: ../elonmusk955/foodgram-project-react/frontend
+      context: ../frontend/
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
@@ -42,5 +42,5 @@ services:
       - frontend
 volumes:
   postgres_data:
-  static_files:
-  media_files:
+  static_value:
+  media_value:
