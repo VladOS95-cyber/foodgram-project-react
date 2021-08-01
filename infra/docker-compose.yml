@@ -5,7 +5,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - ../backend/foodgram_main/.env
   backend:
     build:
       context: ../backend/foodgram_main
@@ -17,7 +17,7 @@ services:
       - static_value:/code/static/
       - media_value:/code/media/
     env_file:
-      - ./.env
+      - ../backend/foodgram_main/.env
   frontend:
     build:
       context: ../frontend
