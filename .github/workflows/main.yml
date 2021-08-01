@@ -22,6 +22,7 @@ jobs:
         uses: docker/build-push-action@v2 
         with:
           push: true
+          context: ./backend/
           tags: vladislavbronzov95/foodgram:latest
 
   deploy:
