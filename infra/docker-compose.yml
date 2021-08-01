@@ -5,7 +5,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
-      - ../backend/foodgram_main/.env
+      - ./.env
   backend:
     image: vladislavbronzov95/foodgram:latest
     build:
@@ -18,7 +18,7 @@ services:
       - static_value:/code/static/
       - media_value:/code/media/
     env_file:
-      - ../backend/foodgram_main/.env
+      - ./.env
   frontend:
     build:
       context: ../frontend
