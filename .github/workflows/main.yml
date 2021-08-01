@@ -1,13 +1,7 @@
 
 name: foodgram
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
-
-  workflow_dispatch:
+on: push
 
 jobs:
   build_and_push_to_docker_hub:
