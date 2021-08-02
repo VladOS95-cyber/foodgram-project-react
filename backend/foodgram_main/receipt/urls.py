@@ -13,14 +13,14 @@ router_v1.register('tags', TagsViewSet, basename='Tags')
 
 urlpatterns = [
     path(
-        'users/<int:author_id>/subscribe/',
-        SubscribeView.as_view(),
-        name='subscribe'
-    ),
-    path(
         'users/subscriptions/',
         ShowSubscriptionsView.as_view(),
         name='subscriptions'
+    ),
+    path(
+        'users/<int:author_id>/subscribe/',
+        SubscribeView.as_view(),
+        name='subscribe'
     ),
     path(
         'recipes/<int:recipe_id>/favorite/',

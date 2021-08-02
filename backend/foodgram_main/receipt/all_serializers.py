@@ -87,40 +87,6 @@ class AuthTokenSerializer(serializers.Serializer):
         return attrs
 
 
-class FollowSerializer(serializers.ModelSerializer):
-    queryset = User.objects.all()
-    user = serializers.PrimaryKeyRelatedField(queryset=queryset)
-    author = serializers.PrimaryKeyRelatedField(queryset=queryset)
-
-    class Meta:
-        model = Follow
-        fields = (
-            'user',
-            'author'
-        )
-
-    def validate(self, data):
-        user = self.context.get('request').user
-        author_id = data['author'].id
-        follow_exist = Follow.objects.filter(
-            user=user,
-            author__id=author_id
-        ).exists()
-
-        if self.context.get('request').method == 'GET':
-            if user.id == author_id or follow_exist:
-                raise serializers.ValidationError(
-                    'Подписка существует')
-        return data
-
-    def to_representation(self, instance):
-        request = self.context.get('request')
-        context = {'request': request}
-        return ShowFollowSerializer(
-            instance.author,
-            context=context).data
-
-
 class ShowFollowSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
     recipes = serializers.SerializerMethodField('get_recipes')
@@ -156,6 +122,40 @@ class ShowFollowSerializer(serializers.ModelSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    queryset = User.objects.all()
+    user = serializers.PrimaryKeyRelatedField(queryset=queryset)
+    author = serializers.PrimaryKeyRelatedField(queryset=queryset)
+
+    class Meta:
+        model = Follow
+        fields = (
+            'user',
+            'author'
+        )
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        author_id = data['author'].id
+        follow_exist = Follow.objects.filter(
+            user=user,
+            author__id=author_id
+        ).exists()
+
+        if self.context.get('request').method == 'GET':
+            if user.id == author_id or follow_exist:
+                raise serializers.ValidationError(
+                    'Подписка существует')
+        return data
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return ShowFollowSerializer(
+            instance.author,
+            context=context).data
 
 
 class TagSerializer(serializers.ModelSerializer):
