@@ -103,9 +103,9 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class ShowFollowSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
-    recipes = serializers.SerializerMethodField('get_recipes')
-    recipes_count = serializers.SerializerMethodField('get_recipes_count')
+    is_subscribed = serializers.SerializerMethodField()
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User

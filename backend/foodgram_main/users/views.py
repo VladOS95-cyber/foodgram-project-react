@@ -57,8 +57,7 @@ class SubscribeView(APIView):
         obj.delete()
 
         return Response(
-            status=status.HTTP_204_NO_CONTENT
-        )
+            status=status.HTTP_204_NO_CONTENT)
 
 
 class ShowSubscriptionsView(generics.ListAPIView):
