@@ -1,7 +1,6 @@
 from .fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from users.models import CustomUser
 from django.contrib.auth import authenticate
 from django.contrib.auth import get_user_model
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -185,6 +184,7 @@ class IngredientsForRecipe(serializers.ModelSerializer):
 
 class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField()
 
     class Meta:
         model = RecipeIngredient
@@ -278,6 +278,24 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time'
         )
+
+    def validate(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        for item in ingredients:
+            if int(item['amount']) < 0:
+                raise serializers.ValidationError(
+                    {'ingredients': (
+                        'Убедитесь, что значение количества ингредиента больше 0')
+                    }
+                )
+        return data
+
+    def validate_cooking_time(self, data):
+        if data <= 0:
+            raise serializers.ValidationError(
+                'Введите целое число больше 0 для времени готовки'
+            )
+        return data
 
     def create(self, validated_data):
         tags_data = validated_data.pop('tags')

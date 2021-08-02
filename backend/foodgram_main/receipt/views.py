@@ -13,6 +13,7 @@ from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, RecipeIngre
 from .filters import RecipeFilter, IngredientFilter
 from django.contrib.auth import get_user_model
 from .permissions import AdminOrAuthorOrReadOnly
+from .custom_paginator import CustomPageNumberPaginator
 
 User = get_user_model()
 
@@ -22,6 +23,7 @@ class ReceiptViewSet(viewsets.ModelViewSet):
     permission_classes = [AdminOrAuthorOrReadOnly, ]
     filter_backends = [DjangoFilterBackend, ]
     filterset_class = RecipeFilter
+    pagination_class = CustomPageNumberPaginator
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
