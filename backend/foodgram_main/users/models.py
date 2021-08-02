@@ -18,8 +18,8 @@ class CustomUser(AbstractUser):
 
     class Meta:
         ordering = ('username',)
-        verbose_name = 'пользователь'
-        verbose_name_plural = 'пользователи'
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
 
     def get_full_name(self):
         full_name = f'{self.first_name} {self.last_name}'

@@ -169,16 +169,12 @@ class SubscribeView(APIView):
         )
 
 
-class ShowSubscriptionsView(generics.ListAPIView):
-    queryset = User.objects.all()
+class ShowSubscriptionsView(APIView):
     permission_classes = [IsAuthenticated, ]
-    serializer_class = ShowFollowSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
+    def get(self, request):
+        user = request.user
 
-    def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(following__user=user)
+        following = Follow.objects.filter(user=user).all()
+        serializer = ShowFollowSerializer(following, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
