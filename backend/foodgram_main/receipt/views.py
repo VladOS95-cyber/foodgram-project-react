@@ -1,15 +1,15 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, generics
 from rest_framework.permissions import (AllowAny, IsAuthenticated)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .all_serializers import (FavorSerializer, IngredientSerializer,
                               ShowRecipeSerializer, ShoppingSerializer,
-                              TagSerializer, CreateRecipeSerializer)
-from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, RecipeIngredient
+                              TagSerializer, CreateRecipeSerializer, ShowFollowSerializer, FollowSerializer)
+from .models import Favorite, Ingredient, Recipe, ShoppingCart, Tag, RecipeIngredient, Follow
 from .filters import RecipeFilter, IngredientFilter
 from django.contrib.auth import get_user_model
 from .permissions import AdminOrAuthorOrReadOnly
@@ -43,7 +43,7 @@ class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
+class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -140,3 +140,45 @@ class DownloadShoppingCart(APIView):
         response = HttpResponse(wishlist, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="wishlist.txt"'
         return response
+
+
+class SubscribeView(APIView):
+    permission_classes = [IsAuthenticated, ]
+
+    def get(self, request, author_id):
+        user = request.user
+
+        data = {
+            'user': user.id,
+            'author': author_id
+        }
+        serializer = FollowSerializer(data=data, context={'request': request})
+
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, author_id):
+        user = request.user
+        author = get_object_or_404(User, id=author_id)
+        obj = get_object_or_404(Follow, user=user, author=author)
+        obj.delete()
+
+        return Response(
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class ShowSubscriptionsView(generics.ListAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, ]
+    serializer_class = ShowFollowSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
+    def get_queryset(self):
+        user = self.request.user
+        return User.objects.filter(following__user=user)

@@ -39,33 +39,40 @@ class Ingredient(models.Model):
     class Meta:
         verbose_name = 'ингредиент'
         verbose_name_plural = 'ингредиенты'
-        ordering = ['name']
+        ordering = ['name', ]
 
     def __str__(self):
         return f'{self.name} {self.measurement_unit}'
 
 
 class Recipe(models.Model):
-    tags = models.ManyToManyField(Tag, through='ReceiptTag',
-                                  verbose_name='теги')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='recipes',
         verbose_name='автор'
     )
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        through='RecipeIngredient',
-        verbose_name='ингредиенты')
+    name = models.CharField(
+        max_length=30,
+        verbose_name='Название рецепта'
+    )
     image = models.ImageField(
         upload_to='recipes/images/',
         verbose_name='Изображение',
     )
-    name = models.CharField(max_length=200, verbose_name='название')
-    text = models.TextField(max_length=500, verbose_name='описание')
+    text = models.TextField(
+        max_length=128,
+        verbose_name='Описание рецепта'
+    )
+    ingredients = models.ManyToManyField(Ingredient,
+                                         through='RecipeIngredient',
+                                         verbose_name='Ингредиенты')
+    tags = models.ManyToManyField(Tag, through='ReceiptTag',
+                                  verbose_name='Теги')
     cooking_time = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1), ],
-        verbose_name='время приготовления')
+        verbose_name='Время приготовления'
+    )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
         auto_now_add=True,
@@ -74,8 +81,8 @@ class Recipe(models.Model):
 
     class Meta:
         ordering = ('name', 'pub_date',)
-        verbose_name = 'рецепт'
-        verbose_name_plural = 'рецепты'
+        verbose_name = 'Рецепт'
+        verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return f'{self.author}: {self.name}'

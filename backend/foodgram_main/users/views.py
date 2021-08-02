@@ -1,14 +1,10 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import status, generics
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
-from receipt.all_serializers import AuthTokenSerializer, ShowFollowSerializer, FollowSerializer
-
-from receipt.models import Follow
+from receipt.all_serializers import AuthTokenSerializer
+from rest_framework import status
 
 
 User = get_user_model()
@@ -32,44 +28,3 @@ class Logout(APIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
-
-
-class SubscribeView(APIView):
-    permission_classes = [IsAuthenticated, ]
-
-    def get(self, request, author_id):
-        user = request.user
-
-        data = {
-            'user': user.id,
-            'author': author_id
-        }
-        serializer = FollowSerializer(data=data, context={'request': request})
-
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def delete(self, request, author_id):
-        user = request.user
-        author = get_object_or_404(User, id=author_id)
-        obj = get_object_or_404(Follow, user=user, author=author)
-        obj.delete()
-
-        return Response(
-            status=status.HTTP_204_NO_CONTENT)
-
-
-class ShowSubscriptionsView(generics.ListAPIView):
-    queryset = User.objects.all()
-    permission_classes = [IsAuthenticated, ]
-    serializer_class = ShowFollowSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-    def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(following__user=user)

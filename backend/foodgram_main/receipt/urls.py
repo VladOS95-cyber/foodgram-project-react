@@ -2,8 +2,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (AddToFavorite, AddToShoping, DownloadShoppingCart,
-                    IngredientsViewSet, ReceiptViewSet, TagsViewSet)
-from users.views import SubscribeView, ShowSubscriptionsView
+                    IngredientsViewSet, ReceiptViewSet, TagsViewSet, SubscribeView, ShowSubscriptionsView)
 
 router_v1 = DefaultRouter()
 

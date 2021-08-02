@@ -11,6 +11,25 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 User = get_user_model()
 
 
+class ShowRecipeAddedSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField('get_image')
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'name',
+            'image',
+            'cooking_time'
+        )
+        read_only_fields = fields
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        photo_url = obj.image.url
+        return request.build_absolute_uri(photo_url)
+
+
 class UserDetailSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
 
@@ -103,9 +122,9 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class ShowFollowSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField('get_is_subscribed')
+    recipes = serializers.SerializerMethodField('get_recipes')
+    recipes_count = serializers.SerializerMethodField('get_recipes_count')
 
     class Meta:
         model = User
@@ -194,25 +213,6 @@ class AddIngredientToRecipeSerializer(serializers.ModelSerializer):
         )
 
 
-class ShowRecipeAddedSerializer(serializers.ModelSerializer):
-    image = serializers.SerializerMethodField('get_image')
-
-    class Meta:
-        model = Recipe
-        fields = (
-            'id',
-            'name',
-            'image',
-            'cooking_time'
-        )
-        read_only_fields = fields
-
-    def get_image(self, obj):
-        request = self.context.get('request')
-        photo_url = obj.image.url
-        return request.build_absolute_uri(photo_url)
-
-
 class ShowRecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserDetailSerializer(read_only=True)
@@ -265,6 +265,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True
     )
+    cooking_time = serializers.IntegerField()
 
     class Meta:
         model = Recipe
@@ -332,7 +333,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             )
         instance.name = validated_data.pop('name')
         instance.text = validated_data.pop('text')
-        instance.image = validated_data.pop('image')
+        if validated_data.get('image') is not None:
+            instance.image = validated_data.pop('image')
         instance.cooking_time = validated_data.pop('cooking_time')
         instance.save()
         return instance
