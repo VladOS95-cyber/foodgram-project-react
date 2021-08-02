@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets, generics
-from rest_framework.permissions import (AllowAny, IsAuthenticated)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -142,6 +142,21 @@ class DownloadShoppingCart(APIView):
         return response
 
 
+class ShowSubscriptionsView(generics.ListAPIView):
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, ]
+    serializer_class = ShowFollowSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
+    def get_queryset(self):
+        user = self.request.user
+        return User.objects.filter(following__user=user)
+
+
 class SubscribeView(APIView):
     permission_classes = [IsAuthenticated, ]
 
@@ -167,18 +182,3 @@ class SubscribeView(APIView):
         return Response(
             status=status.HTTP_204_NO_CONTENT
         )
-
-
-class ShowSubscriptionsView(generics.ListAPIView):
-    queryset = User.objects.all()
-    permission_classes = [IsAuthenticated, ]
-    serializer_class = ShowFollowSerializer
-
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({'request': self.request})
-        return context
-
-    def get_queryset(self):
-        user = self.request.user
-        return User.objects.filter(following__user=user)

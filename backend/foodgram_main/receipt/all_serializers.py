@@ -1,8 +1,7 @@
 from .fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
-from django.contrib.auth import authenticate
-from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate, get_user_model
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag, ReceiptTag, Follow)
 from django.conf import settings
